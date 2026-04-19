@@ -1,0 +1,189 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-dark-bg text-white font-sans antialiased;
+    background: #0a0a0f;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #12121a;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #bf5af2;
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #d946ef;
+  }
+}
+
+@layer components {
+  .neon-text {
+    text-shadow: 0 0 10px rgba(191, 90, 242, 0.8), 0 0 20px rgba(191, 90, 242, 0.4);
+  }
+
+  .neon-border {
+    border: 1px solid rgba(191, 90, 242, 0.5);
+    box-shadow: 0 0 10px rgba(191, 90, 242, 0.2), inset 0 0 10px rgba(191, 90, 242, 0.05);
+  }
+
+  .glass-card {
+    background: rgba(26, 26, 46, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(191, 90, 242, 0.2);
+  }
+
+  .gradient-btn {
+    @apply bg-purple-gradient text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200;
+    background: linear-gradient(135deg, #bf5af2 0%, #ff2d78 100%);
+    box-shadow: 0 4px 15px rgba(191, 90, 242, 0.4);
+  }
+
+  .gradient-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(191, 90, 242, 0.6);
+  }
+
+  .gradient-btn:active {
+    transform: translateY(0);
+  }
+
+  .tab-active {
+    background: linear-gradient(135deg, #bf5af2 0%, #7c3aed 100%);
+    color: white;
+    box-shadow: 0 2px 10px rgba(191, 90, 242, 0.4);
+  }
+
+  .game-card {
+    @apply rounded-2xl overflow-hidden cursor-pointer transition-all duration-300;
+    background: linear-gradient(135deg, #1a1a2e 0%, #12121a 100%);
+    border: 1px solid rgba(191, 90, 242, 0.15);
+  }
+
+  .game-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(191, 90, 242, 0.5);
+    box-shadow: 0 8px 32px rgba(191, 90, 242, 0.2);
+  }
+
+  .bottom-nav-item {
+    @apply flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition-all duration-200 cursor-pointer;
+    min-width: 56px;
+  }
+
+  .bottom-nav-item.active {
+    @apply text-white;
+    color: #bf5af2;
+  }
+
+  .bottom-nav-item:not(.active) {
+    @apply text-gray-500;
+  }
+
+  .input-field {
+    @apply w-full bg-dark-100 border border-dark-border rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-neon-purple transition-colors duration-200;
+  }
+
+  .section-title {
+    @apply text-lg font-bold text-white;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .badge-purple {
+    @apply badge bg-purple-500/20 text-purple-300 border border-purple-500/30;
+  }
+
+  .badge-gold {
+    @apply badge bg-yellow-500/20 text-yellow-300 border border-yellow-500/30;
+  }
+
+  .badge-green {
+    @apply badge bg-green-500/20 text-green-300 border border-green-500/30;
+  }
+
+  .badge-red {
+    @apply badge bg-red-500/20 text-red-300 border border-red-500/30;
+  }
+
+  .stat-card {
+    @apply rounded-2xl p-4;
+    background: linear-gradient(135deg, #1a1a2e 0%, #12121a 100%);
+    border: 1px solid rgba(191, 90, 242, 0.15);
+  }
+
+  .timer-digit {
+    @apply font-mono font-bold text-white;
+    text-shadow: 0 0 10px rgba(191, 90, 242, 0.6);
+  }
+
+  .prediction-btn {
+    @apply rounded-xl py-3 font-bold text-sm transition-all duration-200 cursor-pointer select-none;
+  }
+
+  .prediction-btn:hover {
+    transform: scale(1.02);
+  }
+
+  .prediction-btn:active {
+    transform: scale(0.98);
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #bf5af2 0%, #ff2d78 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-dark-card {
+    background: linear-gradient(135deg, #1a1a2e 0%, #12121a 100%);
+  }
+
+  .border-neon {
+    border-color: rgba(191, 90, 242, 0.4);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+.page-container {
+  padding-bottom: 80px;
+}
+
+@media (min-width: 768px) {
+  .page-container {
+    padding-bottom: 0;
+    padding-left: 240px;
+  }
+}
