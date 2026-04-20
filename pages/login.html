@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Login – BD TRADING</title>
+  <link rel="stylesheet" href="../css/main.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    html, body { height: 100%; overflow: auto; }
+    .auth-page { min-height: 100vh; }
+  </style>
+</head>
+<body style="background: var(--bg);">
+
+<div id="toast"></div>
+
+<div class="auth-page">
+  <!-- Header -->
+  <div class="auth-header" style="position:relative;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+        <svg viewBox="0 0 54 54" fill="none" width="26" height="26"><path d="M20 27L25 22L30 27L35 22" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 32L25 27L30 32L35 27" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="27" cy="27" r="3" fill="white"/></svg>
+      </div>
+      <div style="font-family:'Baloo 2',cursive;font-size:22px;font-weight:800;color:white;">BD TRADING</div>
+    </div>
+    <h1>Log in</h1>
+    <p>Please log in with your phone number or email.<br>If you forgot your password, please contact customer service.</p>
+  </div>
+
+  <!-- Body -->
+  <div class="auth-body">
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabPhone" onclick="setAuthTab('phone')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="12" height="20" x="6" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+        Phone number
+      </button>
+      <button class="auth-tab" id="tabEmail" onclick="setAuthTab('email')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        Email Login
+      </button>
+    </div>
+
+    <!-- Phone Form -->
+    <div id="phoneForm">
+      <div class="input-group">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--primary)"><rect width="12" height="20" x="6" y="2" rx="2"/><path d="M12 18h.01" stroke="white" stroke-width="2"/></svg>
+          <label class="input-label" style="margin-bottom:0;">Phone number</label>
+        </div>
+        <div class="input-wrap">
+          <div class="input-prefix" onclick="toggleCountryCode()" style="gap:4px;">
+            <span>🇧🇩</span> +880 <span style="font-size:10px;">▼</span>
+          </div>
+          <input type="tel" id="phoneInput" placeholder="Please enter the phone number" maxlength="11" />
+        </div>
+      </div>
+      <div class="input-group">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--primary)"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <label class="input-label" style="margin-bottom:0;">Password</label>
+        </div>
+        <div class="input-wrap">
+          <input type="password" id="passwordInput" placeholder="Password" />
+          <button class="input-toggle" onclick="togglePass('passwordInput',this)">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
+        <input type="checkbox" id="rememberPwd" style="width:16px;height:16px;accent-color:var(--primary);" />
+        <label for="rememberPwd" style="font-size:13px;color:var(--text-sub);">Remember password</label>
+      </div>
+    </div>
+
+    <!-- Email Form (hidden) -->
+    <div id="emailForm" style="display:none;">
+      <div class="input-group">
+        <label class="input-label">Email</label>
+        <div class="input-wrap">
+          <input type="email" id="emailInput" placeholder="Please enter your email" />
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Password</label>
+        <div class="input-wrap">
+          <input type="password" id="emailPasswordInput" placeholder="Password" />
+          <button class="input-toggle" onclick="togglePass('emailPasswordInput',this)">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div style="margin-bottom:20px;"></div>
+    </div>
+
+    <!-- Submit Button -->
+    <button class="btn-primary" id="loginBtn" onclick="doLogin()">Log in</button>
+
+    <!-- Register Button -->
+    <div style="margin-top:12px;">
+      <button class="btn-outline" onclick="window.location.href='register.html'">Register</button>
+    </div>
+
+    <!-- Footer Links -->
+    <div style="display:flex;justify-content:center;gap:32px;margin-top:24px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;">
+        <div style="width:44px;height:44px;background:rgba(240,83,74,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" fill="none" stroke="var(--primary)" stroke-width="2" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div style="font-size:12px;color:var(--text-sub);">Forgot password</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;" onclick="window.open('https://t.me/bdtrading_support')">
+        <div style="width:44px;height:44px;background:rgba(240,83,74,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" fill="none" stroke="var(--primary)" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div style="font-size:12px;color:var(--text-sub);">Customer Service</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initSupabase, signIn, getCurrentUser } from '../js/supabase.js';
+  initSupabase();
+
+  // Redirect if already logged in
+  (async () => {
+    const user = await getCurrentUser().catch(() => null);
+    if (user) window.location.href = '../index.html';
+  })();
+
+  window.setAuthTab = (tab) => {
+    document.getElementById('tabPhone').classList.toggle('active', tab==='phone');
+    document.getElementById('tabEmail').classList.toggle('active', tab==='email');
+    document.getElementById('phoneForm').style.display = tab==='phone' ? '' : 'none';
+    document.getElementById('emailForm').style.display = tab==='email' ? '' : 'none';
+  };
+
+  window.togglePass = (id, btn) => {
+    const inp = document.getElementById(id);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  };
+
+  window.toggleCountryCode = () => showToast('Only +880 (Bangladesh) is supported');
+
+  window.doLogin = async () => {
+    const btn = document.getElementById('loginBtn');
+    const isPhone = document.getElementById('tabPhone').classList.contains('active');
+    let identifier, password;
+
+    if (isPhone) {
+      identifier = document.getElementById('phoneInput').value.trim();
+      password = document.getElementById('passwordInput').value;
+      if (!identifier || identifier.length < 10) { showToast('Enter valid phone number'); return; }
+    } else {
+      identifier = document.getElementById('emailInput').value.trim();
+      password = document.getElementById('emailPasswordInput').value;
+      if (!identifier.includes('@')) { showToast('Enter valid email'); return; }
+    }
+
+    if (!password || password.length < 6) { showToast('Password must be at least 6 characters'); return; }
+
+    btn.innerHTML = '<span class="spinner"></span>';
+    btn.disabled = true;
+
+    try {
+      // For phone login, convert to email format
+      const loginId = isPhone ? `${identifier}@bdtrading.app` : identifier;
+      const { createClient } = window.supabase;
+      const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+      const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+      const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      
+      const { data, error } = await client.auth.signInWithPassword({ email: loginId, password });
+      if (error) throw error;
+      
+      showToast('Login successful!');
+      setTimeout(() => window.location.href = '../index.html', 800);
+    } catch(e) {
+      btn.innerHTML = 'Log in';
+      btn.disabled = false;
+      showToast(e.message === 'Invalid login credentials' ? 'Wrong phone or password!' : e.message);
+    }
+  };
+
+  let toastT;
+  window.showToast = (msg) => {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(() => t.classList.remove('show'), 2200);
+  };
+</script>
+</body>
+</html>

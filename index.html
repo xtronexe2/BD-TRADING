@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#f0534a" />
+  <title>BD TRADING</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/main.css" />
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- ===== SPLASH SCREEN ===== -->
+<div id="splash">
+  <div class="splash-logo-wrap">
+    <div class="splash-logo-icon">
+      <svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="27" cy="27" r="25" fill="#f0534a" opacity="0.12"/>
+        <path d="M14 27C14 19.82 19.82 14 27 14C34.18 14 40 19.82 40 27C40 34.18 34.18 40 27 40C19.82 40 14 34.18 14 27Z" fill="#f0534a" opacity="0.25"/>
+        <path d="M20 27L25 22L30 27L35 22" stroke="#f0534a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M20 32L25 27L30 32L35 27" stroke="#f0534a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="27" cy="27" r="3" fill="#f0534a"/>
+      </svg>
+    </div>
+    <div class="splash-name">BD TRADING</div>
+    <div class="splash-sub">Win · Trade · Earn</div>
+  </div>
+  <div class="splash-loader">
+    <span></span><span></span><span></span>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div id="toast"></div>
+
+<!-- ===== SPIN MODAL ===== -->
+<div class="spin-overlay" id="spinOverlay">
+  <div class="spin-modal">
+    <button class="spin-close" id="spinClose">✕</button>
+    <div class="spin-title">🎰 Lucky Spin</div>
+    <div class="spin-subtitle">Spin once a day to win prizes!</div>
+    <div class="spin-wheel-wrap">
+      <svg class="spin-pointer" width="24" height="30" viewBox="0 0 24 30">
+        <polygon points="12,0 24,28 0,28" fill="#f0534a"/>
+        <circle cx="12" cy="26" r="4" fill="#f0534a"/>
+      </svg>
+      <canvas id="spinWheel" width="240" height="240" class="spin-wheel" style="border-radius:50%;"></canvas>
+      <button class="spin-center-btn" id="spinBtn">SPIN</button>
+    </div>
+    <div class="spin-result" id="spinResult">Press SPIN to try your luck!</div>
+    <div class="spin-count" id="spinCount">1 free spin per day</div>
+  </div>
+</div>
+
+<!-- ===== BET MODAL ===== -->
+<div class="modal-overlay" id="betModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="font-size:16px;font-weight:800;color:var(--text-main);margin-bottom:16px;" id="betModalTitle">Place Bet</div>
+    <div style="padding:12px;background:#f9fafb;border-radius:var(--radius-sm);margin-bottom:16px;font-size:13px;color:var(--text-sub);">
+      Select amount: <span id="betChoice" style="font-weight:800;color:var(--primary)"></span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;" id="betAmounts">
+      <button class="bet-amt-opt" data-amt="10" onclick="selectBetAmt(this)">৳10</button>
+      <button class="bet-amt-opt" data-amt="50" onclick="selectBetAmt(this)">৳50</button>
+      <button class="bet-amt-opt" data-amt="100" onclick="selectBetAmt(this)">৳100</button>
+      <button class="bet-amt-opt" data-amt="500" onclick="selectBetAmt(this)">৳500</button>
+      <button class="bet-amt-opt" data-amt="1000" onclick="selectBetAmt(this)">৳1K</button>
+      <button class="bet-amt-opt" data-amt="5000" onclick="selectBetAmt(this)">৳5K</button>
+      <button class="bet-amt-opt" data-amt="10000" onclick="selectBetAmt(this)">৳10K</button>
+      <button class="bet-amt-opt" data-amt="50000" onclick="selectBetAmt(this)">৳50K</button>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-outline" style="flex:1;" onclick="closeBetModal()">Cancel</button>
+      <button class="btn-primary" style="flex:1;" id="confirmBetBtn" onclick="confirmBet()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESULT MODAL ===== -->
+<div class="modal-overlay" id="resultModal">
+  <div class="modal-sheet" style="text-align:center;">
+    <div class="modal-handle"></div>
+    <div id="resultIcon" style="font-size:52px;margin-bottom:10px;"></div>
+    <div id="resultTitle" style="font-size:20px;font-weight:800;margin-bottom:6px;"></div>
+    <div id="resultDesc" style="font-size:14px;color:var(--text-sub);margin-bottom:20px;line-height:1.6;"></div>
+    <button class="btn-primary" onclick="closeResultModal()">Got it!</button>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div id="app" style="display:none;">
+
+  <!-- PAGES -->
+  <div class="pages">
+
+    <!-- ===== HOME PAGE ===== -->
+    <div class="page active" id="page-home">
+      <!-- Header -->
+      <div class="home-header">
+        <div class="home-header-top">
+          <div class="home-logo">BD TRADING</div>
+          <div class="home-header-actions">
+            <button class="header-icon-btn" onclick="openSubPage('notifications')">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </button>
+            <button class="header-icon-btn" onclick="openSubPage('customerService')">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="balance-strip">
+          <div>
+            <div class="balance-strip-label">Total Balance</div>
+            <div class="balance-strip-amount" id="homeBalance">৳0.00</div>
+          </div>
+          <div class="balance-strip-actions">
+            <button class="balance-action-btn" onclick="switchTab('wallet');openSubPage('deposit')">Deposit</button>
+            <button class="balance-action-btn" onclick="switchTab('wallet');openSubPage('withdraw')">Withdraw</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Banner -->
+      <div class="banner-carousel" id="bannerCarousel">
+        <div class="banner-slide active">
+          <div class="banner-content"><h3>🎰 Win Go - Color Trading</h3><p>Predict the color & win up to 9x!</p></div>
+        </div>
+        <div class="banner-slide">
+          <div class="banner-content"><h3>💰 Daily Deposit Bonus</h3><p>Recharge & get extra bonus every day!</p></div>
+        </div>
+        <div class="banner-slide">
+          <div class="banner-content"><h3>🎁 Invite Friends & Earn</h3><p>Get commission from every referral!</p></div>
+        </div>
+        <div class="banner-dots" id="bannerDots">
+          <div class="banner-dot active"></div>
+          <div class="banner-dot"></div>
+          <div class="banner-dot"></div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <div class="quick-action" onclick="switchTab('activity')">
+          <div class="qa-icon" style="background:linear-gradient(135deg,#f093fb,#f5576c)">🎁</div>
+          <div class="qa-label">Activity Award</div>
+        </div>
+        <div class="quick-action" onclick="switchTab('activity')">
+          <div class="qa-icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)">🎲</div>
+          <div class="qa-label">Betting Rebate</div>
+        </div>
+        <div class="quick-action" onclick="switchTab('activity')">
+          <div class="qa-icon" style="background:linear-gradient(135deg,#10b981,#34d399)">🏆</div>
+          <div class="qa-label">Super Jackpot</div>
+        </div>
+        <div class="quick-action" onclick="switchTab('activity')">
+          <div class="qa-icon" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa)">🎀</div>
+          <div class="qa-label">First Gift</div>
+        </div>
+      </div>
+
+      <!-- Game Section -->
+      <div class="game-section">
+        <div class="game-tabs">
+          <button class="game-tab active" onclick="switchGameTab(this,'wingo')">Win Go 30s</button>
+          <button class="game-tab" onclick="switchGameTab(this,'wingo1')">Win Go 1Min</button>
+          <button class="game-tab" onclick="switchGameTab(this,'wingo3')">Win Go 3Min</button>
+          <button class="game-tab" onclick="switchGameTab(this,'wingo5')">Win Go 5Min</button>
+        </div>
+
+        <!-- Win-Go Card -->
+        <div class="wingo-card">
+          <!-- Header row -->
+          <div class="wingo-header">
+            <div>
+              <div class="wingo-title">🎯 Win Go</div>
+              <div class="wingo-period" id="wingoIssue">Period: Loading...</div>
+            </div>
+            <div class="wingo-timer-wrap">
+              <div class="wingo-timer-label">Count Down</div>
+              <div class="wingo-timer">
+                <div class="timer-digit" id="t0">0</div>
+                <div class="timer-digit" id="t1">0</div>
+                <div class="timer-sep">:</div>
+                <div class="timer-digit" id="t2">3</div>
+                <div class="timer-digit" id="t3">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- History balls -->
+          <div class="wingo-history" id="wingoHistory"></div>
+
+          <!-- Bet area -->
+          <div class="wingo-bet-area">
+            <div class="bet-color-row">
+              <button class="bet-color-btn green-btn" onclick="openBetModal('color','green','Green')">Green<br><small style="font-weight:400;font-size:10px">2x</small></button>
+              <button class="bet-color-btn violet-btn" onclick="openBetModal('color','violet','Violet')">Violet<br><small style="font-weight:400;font-size:10px">4.5x</small></button>
+              <button class="bet-color-btn red-btn" onclick="openBetModal('color','red','Red')">Red<br><small style="font-weight:400;font-size:10px">2x</small></button>
+            </div>
+            <div class="bet-numbers-row" id="betNumbersRow"></div>
+            <!-- Big/Small -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+              <button class="bet-color-btn" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);" onclick="openBetModal('size','big','Big (5-9)')">Big (5-9)<br><small style="font-weight:400;font-size:10px">2x</small></button>
+              <button class="bet-color-btn" style="background:linear-gradient(135deg,#10b981,#34d399);" onclick="openBetModal('size','small','Small (0-4)')">Small (0-4)<br><small style="font-weight:400;font-size:10px">2x</small></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Results Table -->
+        <div style="background:white;border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
+          <div class="section-title">Recent Results</div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+              <thead>
+                <tr style="color:var(--text-sub);">
+                  <th style="text-align:left;padding:6px 4px;font-weight:700;">Period</th>
+                  <th style="padding:6px 4px;font-weight:700;">Number</th>
+                  <th style="padding:6px 4px;font-weight:700;">Color</th>
+                  <th style="padding:6px 4px;font-weight:700;">Size</th>
+                </tr>
+              </thead>
+              <tbody id="recentResultsTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ACTIVITY PAGE ===== -->
+    <div class="page" id="page-activity">
+      <div class="activity-header-card">
+        <div style="font-family:'Baloo 2',cursive;font-size:22px;font-weight:800;color:white;margin-bottom:4px;">Activity</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.8);">Claim your bonuses & rewards</div>
+        <div style="display:flex;gap:10px;margin-top:14px;">
+          <div style="flex:1;background:rgba(255,255,255,0.15);border-radius:var(--radius-sm);padding:12px;text-align:center;">
+            <div style="font-size:20px;font-weight:800;color:white;font-family:'Baloo 2',cursive;" id="actTodayBonus">৳0.00</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.75);">Today's Bonus</div>
+          </div>
+          <div style="width:1px;background:rgba(255,255,255,0.2);"></div>
+          <div style="flex:1;background:rgba(255,255,255,0.15);border-radius:var(--radius-sm);padding:12px;text-align:center;">
+            <div style="font-size:20px;font-weight:800;color:white;font-family:'Baloo 2',cursive;" id="actTotalBonus">৳0.00</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.75);">Total Bonus</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:16px;">
+        <!-- Attendance Bonus -->
+        <div class="activity-item card" style="margin-bottom:12px;cursor:pointer;padding:16px;" onclick="openSubPage('attendance')">
+          <div class="activity-icon" style="background:linear-gradient(135deg,#f59e0b22,#fbbf2422);">📅</div>
+          <div class="activity-info">
+            <div class="activity-name">Attendance Bonus</div>
+            <div class="activity-desc">The more consecutive days you sign in, the higher the reward!</div>
+          </div>
+          <svg class="activity-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+
+        <!-- Gifts -->
+        <div class="activity-item card" style="margin-bottom:12px;cursor:pointer;padding:16px;" onclick="openSubPage('gifts')">
+          <div class="activity-icon" style="background:linear-gradient(135deg,#8b5cf622,#a78bfa22);">🎁</div>
+          <div class="activity-info">
+            <div class="activity-name">Gift Redemption</div>
+            <div class="activity-desc">Enter redemption code to receive gift rewards</div>
+          </div>
+          <svg class="activity-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+
+        <!-- Betting Rebate -->
+        <div class="activity-item card" style="margin-bottom:12px;cursor:pointer;padding:16px;" onclick="openSubPage('rebate')">
+          <div class="activity-icon" style="background:linear-gradient(135deg,#10b98122,#34d39922);">💰</div>
+          <div class="activity-info">
+            <div class="activity-name">Betting Rebate</div>
+            <div class="activity-desc">Get cashback on every bet you place!</div>
+          </div>
+          <svg class="activity-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+
+        <!-- Winning Streak -->
+        <div class="activity-item card" style="margin-bottom:12px;cursor:pointer;padding:16px;" onclick="openSubPage('streak')">
+          <div class="activity-icon" style="background:linear-gradient(135deg,#f0534a22,#ff7a7222);">🔥</div>
+          <div class="activity-info">
+            <div class="activity-name">Winning Streak</div>
+            <div class="activity-desc">Win consecutive rounds to earn huge bonuses!</div>
+          </div>
+          <svg class="activity-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+
+        <!-- First Deposit -->
+        <div class="activity-item card" style="margin-bottom:12px;cursor:pointer;padding:16px;" onclick="openSubPage('firstDeposit')">
+          <div class="activity-icon" style="background:linear-gradient(135deg,#3b82f622,#60a5fa22);">🎊</div>
+          <div class="activity-info">
+            <div class="activity-name">First Deposit Bonus</div>
+            <div class="activity-desc">Special bonus for your first-ever deposit!</div>
+          </div>
+          <svg class="activity-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+
+        <!-- Super Jackpot -->
+        <div class="activity-item card" style="cursor:pointer;padding:16px;" onclick="openSubPage('jackpot')">
+          <div class="activity-icon" style="background:linear-gradient(135deg,#ffd70022,#ffaa0022);">🏆</div>
+          <div class="activity-info">
+            <div class="activity-name">Super Jackpot</div>
+            <div class="activity-desc">Weekly jackpot for top players. Join now!</div>
+          </div>
+          <div class="badge badge-red">HOT</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PROMOTION PAGE ===== -->
+    <div class="page" id="page-promotion">
+      <div class="promo-header">
+        <div class="promo-header-title">Promotion</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.8);margin-top:4px;">Invite friends & earn commissions</div>
+      </div>
+
+      <!-- Invite Card -->
+      <div class="promo-invite-card">
+        <div class="section-title" style="margin-bottom:10px;">My Invite Code</div>
+        <div class="promo-code-row">
+          <div class="promo-code" id="promoCode">Loading...</div>
+          <button class="promo-copy-btn" onclick="copyInviteCode()">Copy</button>
+        </div>
+        <div class="promo-stats-row">
+          <div class="promo-stat">
+            <div class="promo-stat-val" id="promoTotal">0</div>
+            <div class="promo-stat-label">Total Invite</div>
+          </div>
+          <div class="promo-stat">
+            <div class="promo-stat-val" id="promoYesterday">0</div>
+            <div class="promo-stat-label">Yesterday</div>
+          </div>
+          <div class="promo-stat">
+            <div class="promo-stat-val" id="promoCommission">৳0</div>
+            <div class="promo-stat-label">Commission</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Spin Button -->
+      <button class="spin-promo-btn" id="dailySpinBtn" onclick="openSpinModal()">
+        <div class="spin-promo-icon">🎰</div>
+        <div class="spin-promo-text">
+          <h3>Daily Lucky Spin</h3>
+          <p>Spin the wheel once every day to win prizes!</p>
+        </div>
+        <div class="spin-promo-badge" id="spinBadge">FREE</div>
+      </button>
+
+      <!-- Invite Link -->
+      <div style="padding:0 16px 14px;">
+        <div class="card" style="padding:16px;">
+          <div class="section-title" style="margin-bottom:12px;">Share Invite Link</div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn-primary" style="flex:1;height:42px;font-size:14px;" onclick="shareLink()">📤 Share Link</button>
+            <button class="btn-outline" style="flex:1;height:42px;font-size:14px;" onclick="openSubPage('promoRules')">📋 Rules</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commission Tiers -->
+      <div style="padding:0 16px 16px;">
+        <div class="section-title" style="margin-bottom:12px;">Commission Tiers</div>
+        <div class="card" style="padding:14px;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;">
+            <div style="padding:12px 0;background:rgba(240,83,74,0.07);border-radius:var(--radius-sm);">
+              <div style="font-size:16px;font-weight:800;color:var(--primary);">6%</div>
+              <div style="font-size:11px;color:var(--text-sub);">Level 1</div>
+            </div>
+            <div style="padding:12px 0;background:rgba(245,158,11,0.07);border-radius:var(--radius-sm);">
+              <div style="font-size:16px;font-weight:800;color:var(--orange);">4%</div>
+              <div style="font-size:11px;color:var(--text-sub);">Level 2</div>
+            </div>
+            <div style="padding:12px 0;background:rgba(16,185,129,0.07);border-radius:var(--radius-sm);">
+              <div style="font-size:16px;font-weight:800;color:var(--green);">2%</div>
+              <div style="font-size:11px;color:var(--text-sub);">Level 3</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== WALLET PAGE ===== -->
+    <div class="page" id="page-wallet">
+      <!-- Header Card -->
+      <div class="wallet-header-card">
+        <div style="font-family:'Baloo 2',cursive;font-size:22px;font-weight:800;color:white;margin-bottom:14px;">Wallet</div>
+        <div class="wallet-balance-label">Total Balance</div>
+        <div class="wallet-balance-amount">
+          <span id="walletBalance">৳0.00</span>
+          <button class="wallet-balance-refresh" onclick="refreshWallet()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
+        </div>
+        <div class="wallet-sub-amounts">
+          <div class="wallet-sub-item">
+            <div class="wallet-sub-val" id="walletMainAmt">0</div>
+            <div class="wallet-sub-label">Total Amount</div>
+          </div>
+          <div class="wallet-divider"></div>
+          <div class="wallet-sub-item">
+            <div class="wallet-sub-val" id="walletDepositAmt">0</div>
+            <div class="wallet-sub-label">Total Deposit</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main & 3rd party wallet circles -->
+      <div style="background:white;margin:0 16px 14px;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);display:flex;gap:12px;align-items:center;">
+        <div style="flex:1;text-align:center;">
+          <div style="width:72px;height:72px;border-radius:50%;border:6px solid #f0534a22;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+            <div style="font-size:13px;font-weight:800;color:var(--text-main);" id="mainWalletPct">0%</div>
+          </div>
+          <div style="font-size:14px;font-weight:700;" id="mainWalletAmt">৳0.00</div>
+          <div style="font-size:11px;color:var(--text-sub);">Main wallet</div>
+        </div>
+        <div style="flex:1;text-align:center;">
+          <div style="width:72px;height:72px;border-radius:50%;border:6px solid #3b82f622;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;">
+            <div style="font-size:13px;font-weight:800;color:var(--text-main);">0%</div>
+          </div>
+          <div style="font-size:14px;font-weight:700;">৳0.00</div>
+          <div style="font-size:11px;color:var(--text-sub);">3rd party wallet</div>
+        </div>
+        <button class="btn-primary" style="flex:1.2;height:38px;font-size:13px;" onclick="showToast('Transfer completed!')">Main wallet transfer</button>
+      </div>
+
+      <!-- Wallet Actions -->
+      <div class="wallet-actions">
+        <div class="wallet-action" onclick="openSubPage('deposit')">
+          <div class="wa-icon" style="background:linear-gradient(135deg,#fff7e6,#fde68a);">💳</div>
+          <div class="wa-label">Deposit</div>
+        </div>
+        <div class="wallet-action" onclick="openSubPage('withdraw')">
+          <div class="wa-icon" style="background:linear-gradient(135deg,#eff6ff,#bfdbfe);">💸</div>
+          <div class="wa-label">Withdraw</div>
+        </div>
+        <div class="wallet-action" onclick="openSubPage('depositHistory')">
+          <div class="wa-icon" style="background:linear-gradient(135deg,#fef2f2,#fecaca);">📋</div>
+          <div class="wa-label">Deposit History</div>
+        </div>
+        <div class="wallet-action" onclick="openSubPage('withdrawHistory')">
+          <div class="wa-icon" style="background:linear-gradient(135deg,#f0fdf4,#bbf7d0);">📜</div>
+          <div class="wa-label">Withdraw History</div>
+        </div>
+      </div>
+
+      <!-- Wallet Info -->
+      <div class="wallet-info-section">
+        <div class="section-title" style="margin-bottom:12px;">Transaction Overview</div>
+        <div class="wallet-info-card">
+          <div class="wallet-info-row">
+            <span class="wallet-info-label">Available Balance</span>
+            <span class="wallet-info-val red" id="walletAvail">৳0.00</span>
+          </div>
+          <div class="wallet-info-row">
+            <span class="wallet-info-label">Withdrawable</span>
+            <span class="wallet-info-val red" id="walletWithdraw">৳0.00</span>
+          </div>
+          <div class="wallet-info-row">
+            <span class="wallet-info-label">Total Deposit</span>
+            <span class="wallet-info-val" id="walletTotalDeposit">৳0.00</span>
+          </div>
+          <div class="wallet-info-row">
+            <span class="wallet-info-label">Total Withdraw</span>
+            <span class="wallet-info-val" id="walletTotalWithdraw">৳0.00</span>
+          </div>
+          <div class="wallet-info-row">
+            <span class="wallet-info-label">Bonus Earned</span>
+            <span class="wallet-info-val" id="walletBonus">৳0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div style="padding:0 16px 16px;">
+        <div class="section-title" style="margin-bottom:12px;">Recent Transactions</div>
+        <div id="recentTransactions">
+          <div style="text-align:center;padding:24px;color:var(--text-light);">
+            <div style="font-size:32px;margin-bottom:8px;">📭</div>
+            <div style="font-size:13px;">No transactions yet</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ACCOUNT PAGE ===== -->
+    <div class="page" id="page-account">
+      <!-- Account Header -->
+      <div class="account-header">
+        <div class="account-avatar" id="accountAvatar" onclick="openSubPage('changeAvatar')">
+          <span id="avatarDisplay">👤</span>
+        </div>
+        <div>
+          <div class="account-name" id="accountName">Loading...</div>
+          <div class="account-uid">
+            UID: <span id="accountUID">-</span>
+            <button class="uid-copy" onclick="copyUID()">Copy</button>
+          </div>
+          <div style="margin-top:4px;font-size:11px;color:rgba(255,255,255,0.7);">Last login: <span id="accountLastLogin">-</span></div>
+          <div class="account-vip-badge">⭐ VIP<span id="accountVIP">0</span></div>
+        </div>
+      </div>
+
+      <!-- Balance Card -->
+      <div class="account-balance-card">
+        <div class="acct-bal-label">Total Balance</div>
+        <div class="acct-bal-amount">
+          <span id="accountBalance">৳0.00</span>
+          <button style="background:none;border:none;cursor:pointer;color:var(--text-sub);" onclick="refreshAccount()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Buttons -->
+      <div class="account-quick-row">
+        <div class="account-q-btn" onclick="openSubPage('wallet')">
+          <div class="aqb-icon" style="background:linear-gradient(135deg,#fef3c7,#fde68a);">💼</div>
+          <div class="aqb-label">Wallet</div>
+        </div>
+        <div class="account-q-btn" onclick="openSubPage('deposit')">
+          <div class="aqb-icon" style="background:linear-gradient(135deg,#fff7ed,#fed7aa);">📥</div>
+          <div class="aqb-label">Deposit</div>
+        </div>
+        <div class="account-q-btn" onclick="openSubPage('withdraw')">
+          <div class="aqb-icon" style="background:linear-gradient(135deg,#eff6ff,#bfdbfe);">📤</div>
+          <div class="aqb-label">Withdraw</div>
+        </div>
+        <div class="account-q-btn" onclick="openSubPage('vip')">
+          <div class="aqb-icon" style="background:linear-gradient(135deg,#fefce8,#fef08a);">👑</div>
+          <div class="aqb-label">VIP</div>
+        </div>
+      </div>
+
+      <!-- Safe -->
+      <div style="padding:14px 16px 0;">
+        <div class="card" style="padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;" onclick="openSubPage('safe')">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#fef3c7,#fde68a);display:flex;align-items:center;justify-content:center;font-size:22px;">🔒</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;">Safe</div>
+            <div style="font-size:12px;color:var(--text-sub);">Half-hour interest rate 0.0%</div>
+          </div>
+          <div style="background:rgba(240,83,74,0.1);color:var(--primary);font-size:12px;font-weight:700;padding:3px 10px;border-radius:100px;" id="safeBalance">৳0.00</div>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+      </div>
+
+      <!-- History Section -->
+      <div class="account-menu-section">
+        <div class="account-menu-card">
+          <div class="account-menu-item" onclick="openSubPage('gameHistory')">
+            <div class="ami-icon" style="background:#eff6ff;">📊</div>
+            <div class="ami-text"><div class="ami-name">Game History</div><div class="ami-sub">My game history</div></div>
+            <svg class="ami-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+          <div class="account-menu-item" onclick="openSubPage('transactions')">
+            <div class="ami-icon" style="background:#f0fdf4;">💳</div>
+            <div class="ami-text"><div class="ami-name">Transaction</div><div class="ami-sub">My transaction history</div></div>
+            <svg class="ami-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+          <div class="account-menu-item" onclick="openSubPage('depositHistory')">
+            <div class="ami-icon" style="background:#fef2f2;">📥</div>
+            <div class="ami-text"><div class="ami-name">Deposit</div><div class="ami-sub">My deposit history</div></div>
+            <svg class="ami-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+          <div class="account-menu-item" onclick="openSubPage('withdrawHistory')">
+            <div class="ami-icon" style="background:#fff7ed;">📤</div>
+            <div class="ami-text"><div class="ami-name">Withdraw</div><div class="ami-sub">My withdraw history</div></div>
+            <svg class="ami-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+        </div>
+
+        <div class="account-menu-card">
+          <div class="account-menu-item" onclick="openSubPage('notifications')">
+            <div class="ami-icon" style="background:#fef2f2;">🔔</div>
+            <div class="ami-text"><div class="ami-name">Notification</div></div>
+            <svg class="ami-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+          <div class="account-menu-item" onclick="openSubPage('gifts')">
+            <div class="ami-icon" style="background:#f5f3ff;">🎁</div>
+            <div class="ami-text"><div class="ami-name">Gifts</div></div>
+            <svg class="ami-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+          <div class="account-menu-item" onclick="openSubPage('gameStats')">
+            <div class="ami-icon" style="background:#fef9c3;">📈</div>
+            <div class="ami-text"><div class="ami-name">Game statistics</div></div>
+            <svg class="ami-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+          <div class="account-menu-item">
+            <div class="ami-icon" style="background:#f0fdf4;">🌐</div>
+            <div class="ami-text"><div class="ami-name">Language</div></div>
+            <span style="font-size:13px;font-weight:700;color:var(--text-sub);margin-right:8px;">English</span>
+            <svg class="ami-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+        </div>
+
+        <!-- Service Center -->
+        <div class="section-title" style="margin-bottom:12px;">Service Center</div>
+        <div class="account-menu-card">
+          <div style="padding:8px;" class="service-center-grid">
+            <div class="sc-item" onclick="openSubPage('settings')">
+              <div class="sc-icon">⚙️</div>
+              <div class="sc-label">Settings</div>
+            </div>
+            <div class="sc-item" onclick="openSubPage('feedback')">
+              <div class="sc-icon">📝</div>
+              <div class="sc-label">Feedback</div>
+            </div>
+            <div class="sc-item" onclick="openSubPage('announcement')">
+              <div class="sc-icon">📢</div>
+              <div class="sc-label">Announcement</div>
+            </div>
+            <div class="sc-item" onclick="openSubPage('customerService')">
+              <div class="sc-icon">🎧</div>
+              <div class="sc-label">Customer Service</div>
+            </div>
+            <div class="sc-item" onclick="openSubPage('guide')">
+              <div class="sc-icon">📖</div>
+              <div class="sc-label">Beginner's Guide</div>
+            </div>
+            <div class="sc-item" onclick="openSubPage('about')">
+              <div class="sc-icon">ℹ️</div>
+              <div class="sc-label">About Us</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logout -->
+      <button class="logout-btn" onclick="handleLogout()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log out
+      </button>
+    </div>
+
+  </div><!-- /pages -->
+
+  <!-- ===== BOTTOM NAV ===== -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-home" onclick="switchTab('home')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="nav-btn" id="nav-activity" onclick="switchTab('activity')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Activity</span>
+    </button>
+    <button class="nav-btn promo-btn" id="nav-promotion" onclick="switchTab('promotion')">
+      <div class="promo-circle">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <span>Promotion</span>
+    </button>
+    <button class="nav-btn" id="nav-wallet" onclick="switchTab('wallet')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+      <span>Wallet</span>
+    </button>
+    <button class="nav-btn" id="nav-account" onclick="switchTab('account')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Account</span>
+    </button>
+  </nav>
+
+</div><!-- /app -->
+
+<!-- ===== SUB PAGES (slides in from right) ===== -->
+<div id="subPages"></div>
+
+<!-- ===== EXTRA STYLES ===== -->
+<style>
+.bet-amt-opt {
+  padding: 8px 4px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: white;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--text-main);
+  font-family: 'Nunito', sans-serif;
+  transition: all 0.15s;
+}
+.bet-amt-opt.selected {
+  border-color: var(--primary);
+  background: rgba(240,83,74,0.08);
+  color: var(--primary);
+}
+.txn-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.txn-item:last-child { border-bottom: none; }
+.txn-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.txn-info { flex: 1; }
+.txn-type { font-size: 13px; font-weight: 700; color: var(--text-main); }
+.txn-date { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+.txn-amount { font-size: 14px; font-weight: 800; }
+.txn-amount.win { color: var(--green); }
+.txn-amount.loss { color: var(--primary); }
+</style>
+
+<!-- ===== MAIN SCRIPT ===== -->
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

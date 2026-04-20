@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Register – BD TRADING</title>
+  <link rel="stylesheet" href="../css/main.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    html, body { height: 100%; overflow: auto; }
+  </style>
+</head>
+<body style="background: var(--bg);">
+
+<div id="toast"></div>
+
+<div class="auth-page">
+  <!-- Header -->
+  <div class="auth-header">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <button onclick="window.history.back()" style="width:36px;height:36px;background:rgba(255,255,255,0.2);border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <div style="font-family:'Baloo 2',cursive;font-size:22px;font-weight:800;color:white;">BD TRADING</div>
+    </div>
+    <h1>Register</h1>
+    <p>Please register by phone number or email</p>
+  </div>
+
+  <!-- Body -->
+  <div class="auth-body">
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabPhone" onclick="setTab('phone')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="12" height="20" x="6" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+        Register your phone
+      </button>
+      <button class="auth-tab" id="tabEmail" onclick="setTab('email')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        Email Register
+      </button>
+    </div>
+
+    <!-- Phone Form -->
+    <div id="phoneForm">
+      <div class="input-group">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--primary)"><rect width="12" height="20" x="6" y="2" rx="2"/></svg>
+          <label class="input-label" style="margin-bottom:0;">Phone number</label>
+        </div>
+        <div class="input-wrap">
+          <div class="input-prefix">🇧🇩 +880 ▼</div>
+          <input type="tel" id="phoneInput" placeholder="Please enter the phone number" maxlength="11" />
+        </div>
+      </div>
+      <div class="input-group">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--primary)"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <label class="input-label" style="margin-bottom:0;">Set password</label>
+        </div>
+        <div class="input-wrap">
+          <input type="password" id="passInput" placeholder="Set password" />
+          <button class="input-toggle" onclick="togglePass('passInput')">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="input-group">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--primary)"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <label class="input-label" style="margin-bottom:0;">Confirm password</label>
+        </div>
+        <div class="input-wrap">
+          <input type="password" id="confirmPassInput" placeholder="Confirm password" />
+          <button class="input-toggle" onclick="togglePass('confirmPassInput')">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Email Form (hidden) -->
+    <div id="emailForm" style="display:none;">
+      <div class="input-group">
+        <label class="input-label">Email</label>
+        <div class="input-wrap">
+          <input type="email" id="emailInput" placeholder="Please enter your email" />
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Set password</label>
+        <div class="input-wrap">
+          <input type="password" id="emailPassInput" placeholder="Set password" />
+          <button class="input-toggle" onclick="togglePass('emailPassInput')">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Confirm password</label>
+        <div class="input-wrap">
+          <input type="password" id="emailConfirmPassInput" placeholder="Confirm password" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Invite Code -->
+    <div class="input-group">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--primary)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <label class="input-label" style="margin-bottom:0;">Invite code</label>
+      </div>
+      <div class="input-wrap">
+        <input type="text" id="inviteCodeInput" placeholder="Enter invite code (optional)" maxlength="12" />
+      </div>
+    </div>
+
+    <!-- Terms Checkbox -->
+    <div class="checkbox-row" style="margin-bottom:20px;">
+      <input type="checkbox" id="agreeTerms" />
+      <label for="agreeTerms">
+        I have read and agree <a href="#" onclick="return false;">【Privacy Agreement】</a>
+      </label>
+    </div>
+
+    <!-- Register Button -->
+    <button class="btn-primary" id="registerBtn" onclick="doRegister()">Register</button>
+
+    <!-- Login Link -->
+    <div class="auth-footer" style="margin-top:16px;">
+      I have an account <button onclick="window.location.href='login.html'">Login</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+  const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+
+  let client;
+  function getClient() {
+    if (!client && window.supabase) client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    return client;
+  }
+
+  window.setTab = (tab) => {
+    document.getElementById('tabPhone').classList.toggle('active', tab==='phone');
+    document.getElementById('tabEmail').classList.toggle('active', tab==='email');
+    document.getElementById('phoneForm').style.display = tab==='phone' ? '' : 'none';
+    document.getElementById('emailForm').style.display = tab==='email' ? '' : 'none';
+  };
+
+  window.togglePass = (id) => {
+    const inp = document.getElementById(id);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  };
+
+  window.doRegister = async () => {
+    const isPhone = document.getElementById('tabPhone').classList.contains('active');
+    const inviteCode = document.getElementById('inviteCodeInput').value.trim();
+    const agree = document.getElementById('agreeTerms').checked;
+
+    if (!agree) { showToast('Please agree to the Privacy Agreement'); return; }
+
+    let identifier, password, confirmPassword;
+
+    if (isPhone) {
+      identifier = document.getElementById('phoneInput').value.trim();
+      password = document.getElementById('passInput').value;
+      confirmPassword = document.getElementById('confirmPassInput').value;
+      if (!identifier || identifier.length < 10) { showToast('Enter valid phone number (10+ digits)'); return; }
+    } else {
+      identifier = document.getElementById('emailInput').value.trim();
+      password = document.getElementById('emailPassInput').value;
+      confirmPassword = document.getElementById('emailConfirmPassInput').value;
+      if (!identifier.includes('@')) { showToast('Enter valid email address'); return; }
+    }
+
+    if (!password || password.length < 6) { showToast('Password must be at least 6 characters'); return; }
+    if (password !== confirmPassword) { showToast('Passwords do not match!'); return; }
+
+    const btn = document.getElementById('registerBtn');
+    btn.innerHTML = '<span class="spinner"></span>';
+    btn.disabled = true;
+
+    try {
+      const sb = getClient();
+      const email = isPhone ? `${identifier}@bdtrading.app` : identifier;
+      
+      const { data, error } = await sb.auth.signUp({ email, password });
+      if (error) throw error;
+
+      if (data.user) {
+        // Create profile
+        const uid = Math.floor(1000000 + Math.random() * 9000000).toString();
+        const myInviteCode = Math.floor(100000000 + Math.random() * 900000000).toString();
+        
+        await sb.from('profiles').insert({
+          id: data.user.id,
+          phone: isPhone ? identifier : null,
+          email: isPhone ? null : identifier,
+          uid,
+          balance: 0,
+          invite_code: myInviteCode,
+          referred_by: inviteCode || null,
+          avatar: null,
+          username: `Member${uid.slice(-6)}`,
+          vip_level: 0,
+          created_at: new Date().toISOString()
+        });
+      }
+
+      showToast('Registration successful! Please login.');
+      setTimeout(() => window.location.href = 'login.html', 1200);
+    } catch(e) {
+      btn.innerHTML = 'Register';
+      btn.disabled = false;
+      let msg = e.message;
+      if (msg.includes('already registered')) msg = 'This account already exists!';
+      showToast(msg);
+    }
+  };
+
+  let toastT;
+  window.showToast = (msg) => {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(() => t.classList.remove('show'), 2500);
+  };
+
+  // Pre-fill invite code from URL
+  const urlRef = new URLSearchParams(window.location.search).get('ref');
+  if (urlRef) document.getElementById('inviteCodeInput').value = urlRef;
+</script>
+</body>
+</html>
